@@ -1,0 +1,19 @@
+name: Feature request
+description: Suggest an improvement or support for another agent
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem does this solve?
+    validations:
+      required: true
+  - type: textarea
+    id: idea
+    attributes:
+      label: Proposed solution
+  - type: input
+    id: docs
+    attributes:
+      label: Docs link (for new agent support)
+      description: Official docs showing where that agent stores skills.
