@@ -16,6 +16,10 @@ single project. Then you change laptops, reinstall your OS, or delete a folder, 
 gone. Backup Your Skills puts them all in a Git repo you control, and brings them back whenever
 you ask. You just talk to your agent; it does the work.
 
+![Demo: saying "back up my skills", the skill list appearing, a secret scan, and the push to GitHub](assets/demo.gif)
+
+<sub>Demo: the script output is from a real run on sample skills; the chat lines are illustrative.</sub>
+
 ## Table of Contents
 
 - [About Project](#about-project)
@@ -179,6 +183,7 @@ backup-your-skills/
     SKILL.md                    the skill: what the agent asks and does
     scripts/skillvault.py       discover, backup, status, restore (stdlib only)
   tests/test_skillvault.py      backup -> change -> restore round trip
+  assets/                       demo.gif and social-preview.png
   .github/                      CI, issue forms, pull request template
   CHANGELOG.md  CONTRIBUTING.md  CODE_OF_CONDUCT.md  SECURITY.md  LICENSE
 ```
