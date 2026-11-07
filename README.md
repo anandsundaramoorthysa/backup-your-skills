@@ -247,6 +247,8 @@ If you have any questions, feedback, or suggestions, feel free to reach out:
 
 - **Anand Sundaramoorthy** - [sanand03072005@gmail.com](mailto:sanand03072005@gmail.com?subject=About%20Backup%20Your%20Skills)
 - **GitHub:** [@anandsundaramoorthysa](https://github.com/anandsundaramoorthysa)
+- **LinkedIn:** [anandsundaramoorthysa](https://www.linkedin.com/in/anandsundaramoorthysa)
+- **Website:** [anandsundaramoorthy.com](https://anandsundaramoorthy.com)
 
 ## Acknowledge
 
