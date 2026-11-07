@@ -24,6 +24,7 @@ with tempfile.TemporaryDirectory() as t:
 
     assert set(run("discover", *P)["skills"]) == {"user/alpha", "project/app/beta"}
     assert run("backup", "--repo", str(repo), "--select", "all", *P)["backed_up"]
+    assert (repo / ".gitattributes").read_text() == "* -text\n"
     assert sorted(run("status", "--repo", str(repo), *P)["unchanged"]) == ["project/app/beta", "user/alpha"]
 
     mk(home / "skills", "alpha", "changed"); mk(home / "skills", "gamma")

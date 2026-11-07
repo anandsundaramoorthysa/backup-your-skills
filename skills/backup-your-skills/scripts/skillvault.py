@@ -178,6 +178,9 @@ def cmd_backup(a):
             pruned.append(sid)
     m["plugins"] = plugin_list(a.agent)  # names only: reinstall these, don't copy them
     repo.mkdir(parents=True, exist_ok=True)
+    ga = repo / ".gitattributes"  # keep skills byte-identical across OSes (no CRLF rewriting)
+    if not ga.exists():
+        ga.write_text("* -text\n", "utf-8")
     (repo / MANIFEST).write_text(json.dumps(m, indent=2), "utf-8")
     print(json.dumps(dict(ok=True, backed_up=done, pruned=pruned, secret_findings_ignored=blocked), indent=2))
 
