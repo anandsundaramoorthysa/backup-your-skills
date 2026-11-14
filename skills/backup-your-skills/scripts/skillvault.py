@@ -18,7 +18,22 @@ AGENTS = {
 IGNORE = {".git", "__pycache__", ".DS_Store", "node_modules", ".venv"}
 SKIP_SCAN = IGNORE | {"AppData", "Library", "Windows", "Program Files", ".cache", ".npm", "dist", "build"}
 MANIFEST = "manifest.json"
+# Credential files are never copied, hashed or scanned. Templates (.env.example etc.) are kept.
+_SENSITIVE = re.compile(r"(?i)^(\.env(\..+)?|id_(rsa|dsa|ecdsa|ed25519)(\..+)?|\.npmrc|\.netrc|\.pypirc|credentials(\.json)?|.+\.(pem|key|p12|pfx|jks|keystore))$")
+_TEMPLATE = re.compile(r"(?i)\.(example|sample|template|dist)$")
+
+
+def sensitive(name):
+    return bool(_SENSITIVE.match(name)) and not _TEMPLATE.search(name)
+
+
+def skipped(p):
+    return bool(set(Path(p).parts) & IGNORE) or sensitive(Path(p).name)
+
+
 SECRET_PATTERNS = {
+    "API key (sk_/rk_/pk_)": r"\b(?:sk|rk|pk)_(?:live_|test_)?[A-Za-z0-9]{24,}\b",
+    "env-style secret": r"(?im)^\s*(?:export\s+)?[A-Z0-9_]*(?:KEY|SECRET|TOKEN|PASSWORD|PASSWD)[A-Z0-9_]*[ \t]*=[ \t]*(?=[A-Za-z0-9_+/=-]*\d)[A-Za-z0-9_+/=-]{16,}[ \t]*$",
     "private key": r"-----BEGIN [A-Z ]*PRIVATE KEY-----",
     "AWS access key": r"\bAKIA[0-9A-Z]{16}\b",
     "GitHub token": r"\bgh[pousr]_[A-Za-z0-9]{30,}\b",
@@ -35,7 +50,7 @@ def agent_home(agent):
 
 def skill_hash(d):
     h = hashlib.sha256()
-    for p in sorted(x for x in Path(d).rglob("*") if x.is_file() and not (set(x.parts) & IGNORE)):
+    for p in sorted(x for x in Path(d).rglob("*") if x.is_file() and not skipped(x)):
         h.update(p.relative_to(d).as_posix().encode())
         h.update(p.read_bytes())
     return h.hexdigest()
@@ -96,7 +111,7 @@ def repo_path(repo, sid):
 def scan_secrets(d):
     hits = []
     for p in Path(d).rglob("*"):
-        if not p.is_file() or (set(p.parts) & IGNORE) or p.stat().st_size > 1_000_000:
+        if not p.is_file() or skipped(p) or p.stat().st_size > 1_000_000:
             continue
         try:
             text = p.read_text("utf-8")
@@ -130,7 +145,7 @@ def select(ids, wanted):
 def copy_skill(src, dst):
     if Path(dst).exists():
         shutil.rmtree(dst)
-    shutil.copytree(src, dst, ignore=shutil.ignore_patterns(*IGNORE))
+    shutil.copytree(src, dst, ignore=lambda d, names: [n for n in names if n in IGNORE or sensitive(n)])
 
 
 def cmd_discover(a):
@@ -182,7 +197,11 @@ def cmd_backup(a):
     if not ga.exists():
         ga.write_text("* -text\n", "utf-8")
     (repo / MANIFEST).write_text(json.dumps(m, indent=2), "utf-8")
-    print(json.dumps(dict(ok=True, backed_up=done, pruned=pruned, secret_findings_ignored=blocked), indent=2))
+    left_out = sorted(f"{sid}/{p.relative_to(local[sid]['path']).as_posix()}" for sid in ids
+                      for p in Path(local[sid]["path"]).rglob("*")
+                      if p.is_file() and sensitive(p.name) and not (set(p.parts) & IGNORE))
+    print(json.dumps(dict(ok=True, backed_up=done, pruned=pruned, secret_findings_ignored=blocked,
+                          credential_files_not_copied=left_out), indent=2))
 
 
 def cmd_restore(a):

@@ -42,5 +42,7 @@ For later updates, run `skillvault.py status --repo <repo> [scope flags]` first 
 ## Rules
 
 - Never push without the user having chosen the repo visibility.
+- Credential files such as `.env` are never copied. After a backup, tell the user which ones were left out (`credential_files_not_copied`).
+- The secret scan can miss things. Say so plainly; never tell the user a backup is free of real credentials.
 - Never print file contents of skills with findings; report file, line and kind only.
 - Config home is `~/.claude`, or `$CLAUDE_CONFIG_DIR` if set. Other agents are added in the `AGENTS` table of the script.

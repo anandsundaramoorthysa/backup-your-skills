@@ -36,6 +36,20 @@ with tempfile.TemporaryDirectory() as t:
     (home / "skills/gamma/x.md").write_text("key = 'AKIAABCDEFGHIJKLMNOP'")
     run("backup", "--repo", str(repo), "--select", "all", *P, ok=2)
 
+    # regression: an unquoted `sk_` key in a .env must never be copied, and must be detected
+    (home / "skills/gamma/x.md").unlink()
+    fake = "sk_" + "a1b2c3d4" * 6
+    (home / "skills/gamma/.env").write_text(f"SERVICE_API_KEY={fake}\n")
+    (home / "skills/gamma/.env.example").write_text("SERVICE_API_KEY=\n")
+    (home / "skills/gamma/notes.md").write_text(f"export SERVICE_API_KEY={fake}\n")
+    run("backup", "--repo", str(repo), "--select", "all", *P, ok=2)               # env-style + sk_ pattern flag notes.md
+    (home / "skills/gamma/notes.md").unlink()
+    r = run("backup", "--repo", str(repo), "--select", "all", *P)
+    assert not (repo / "skills/user/gamma/.env").exists(), ".env was copied"
+    assert (repo / "skills/user/gamma/.env.example").exists()
+    assert "user/gamma/.env" in r["credential_files_not_copied"]
+    assert fake not in "".join(p.read_text(errors="ignore") for p in repo.rglob("*") if p.is_file() and ".git" not in p.parts)
+
     # restore onto a fresh machine
     env["CLAUDE_CONFIG_DIR"] = str(t / "home2"); new = t / "app2"
     r = run("restore", "--repo", str(repo), "--select", "all", "--project-dir", str(new))

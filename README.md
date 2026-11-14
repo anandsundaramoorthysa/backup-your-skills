@@ -172,6 +172,7 @@ manifest.json                   hashes, dates, plugin names to reinstall
   answer. If in doubt, choose private.
 - Skills can contain personal paths, tokens or API keys. The built-in scan is a safety net, not
   a guarantee: review before making a backup repo public.
+- Credential files (`.env`, `*.pem`, `*.key`, `id_rsa*`, `.npmrc`, `.netrc` and similar) are never copied. The backup output lists which ones were left out. `.env.example` templates are kept.
 - Nothing is sent anywhere except the Git remote you choose. There is no telemetry.
 - Report security problems privately, see [SECURITY.md](SECURITY.md).
 
